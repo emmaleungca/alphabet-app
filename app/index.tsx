@@ -3,14 +3,14 @@ import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function Index() {
@@ -21,6 +21,7 @@ export default function Index() {
   const [input, setInput] = useState("");
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [scores, setScores] = useState<number[]>(Array(8).fill(0));
+  const [playerNames, setPlayerNames] = useState<string[]>(Array(8).fill(""));
 
   // Load saved data on app start
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function Index() {
           setCurrentPlayer(parsed.currentPlayer || 0);
           setGuesses(parsed.guesses || []);
           setScores(parsed.scores || Array(8).fill(0));
+          setPlayerNames(parsed.playerNames || Array(8).fill(""));
           console.log('Data loaded successfully');
         } else {
           console.log('No saved data found');
@@ -58,6 +60,7 @@ export default function Index() {
           currentPlayer,
           guesses,
           scores,
+          playerNames,
         };
         const dataString = JSON.stringify(dataToSave);
         await SecureStore.setItemAsync('alphabetGameData', dataString);
@@ -67,7 +70,7 @@ export default function Index() {
       }
     };
     saveData();
-  }, [stage, players, letter, currentPlayer, guesses, scores]);
+  }, [stage, players, letter, currentPlayer, guesses, scores, playerNames]);
 
   const submitGuess = () => {
     const guess = input.trim().toLowerCase();
@@ -112,8 +115,13 @@ export default function Index() {
     setStage("setup");
     setGuesses([]);
     setScores(Array(8).fill(0));
+    setPlayerNames(Array(8).fill(""));
     setCurrentPlayer(0);
     setInput("");
+  };
+
+  const getPlayerName = (playerIndex: number) => {
+    return playerNames[playerIndex]?.trim() || `Player ${playerIndex + 1}`;
   };
 
   if (stage === "setup") {
@@ -245,6 +253,52 @@ export default function Index() {
               </View>
             </View>
 
+            <View style={{ marginBottom: 40 }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "600",
+                  color: "#000000",
+                  marginBottom: 15,
+                }}
+              >
+                Player Names
+              </Text>
+              {Array.from({ length: players }).map((_, i) => (
+                <View key={i} style={{ marginBottom: 10 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: "#000000",
+                      marginBottom: 5,
+                    }}
+                  >
+                    {getPlayerName(i)}
+                  </Text>
+                  <TextInput
+                    value={playerNames[i] || ""}
+                    onChangeText={(text) => {
+                      const newNames = [...playerNames];
+                      newNames[i] = text;
+                      setPlayerNames(newNames);
+                    }}
+                    placeholder={`Enter name for Player ${i + 1}`}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#8E8E93",
+                      padding: 12,
+                      borderRadius: 8,
+                      fontSize: 16,
+                      color: "#000000",
+                      backgroundColor: "#FFFFFF",
+                    }}
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                  />
+                </View>
+              ))}
+            </View>
+
             <TouchableOpacity
               onPress={() => setStage("game")}
               style={{
@@ -372,7 +426,7 @@ export default function Index() {
                 marginBottom: 15,
               }}
             >
-              Turn for Player {currentPlayer + 1}
+              Turn for {getPlayerName(currentPlayer)}
             </Text>
 
             <TextInput
@@ -450,7 +504,7 @@ export default function Index() {
                 }}
               >
                 <Text style={{ fontSize: 16, color: "#000000" }}>
-                  Player {i + 1}
+                  {getPlayerName(i)}
                 </Text>
                 <Text style={{ fontSize: 16, fontWeight: "600", color: "#007AFF" }}>
                   {scores[i]} points
@@ -516,7 +570,7 @@ export default function Index() {
                       color: "#000000",
                     }}
                   >
-                    Player {g.player + 1}: {g.word}
+                    {getPlayerName(g.player)}: {g.word}
                     {g.duplicate ? " (duplicate)" : ""}
                   </Text>
                 </View>
