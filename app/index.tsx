@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     KeyboardAvoidingView,
     Platform,
@@ -20,6 +21,47 @@ export default function Index() {
   const [input, setInput] = useState("");
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [scores, setScores] = useState<number[]>(Array(8).fill(0));
+
+  // Load saved data on app start
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const savedData = await AsyncStorage.getItem('alphabetGameData');
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          setStage(parsed.stage || "setup");
+          setPlayers(parsed.players || 2);
+          setLetter(parsed.letter || "A");
+          setCurrentPlayer(parsed.currentPlayer || 0);
+          setGuesses(parsed.guesses || []);
+          setScores(parsed.scores || Array(8).fill(0));
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Save data whenever state changes
+  useEffect(() => {
+    const saveData = async () => {
+      try {
+        const dataToSave = {
+          stage,
+          players,
+          letter,
+          currentPlayer,
+          guesses,
+          scores,
+        };
+        await AsyncStorage.setItem('alphabetGameData', JSON.stringify(dataToSave));
+      } catch (error) {
+        console.error('Error saving data:', error);
+      }
+    };
+    saveData();
+  }, [stage, players, letter, currentPlayer, guesses, scores]);
 
   const submitGuess = () => {
     const guess = input.trim().toLowerCase();
