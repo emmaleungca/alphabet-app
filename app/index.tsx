@@ -1,16 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
     ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
     View,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function Index() {
   const [stage, setStage] = useState<"setup" | "game">("setup");
