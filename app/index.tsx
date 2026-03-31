@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
@@ -26,7 +26,8 @@ export default function Index() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const savedData = await AsyncStorage.getItem('alphabetGameData');
+        const savedData = await SecureStore.getItemAsync('alphabetGameData');
+        console.log('Loading data:', savedData);
         if (savedData) {
           const parsed = JSON.parse(savedData);
           setStage(parsed.stage || "setup");
@@ -35,6 +36,9 @@ export default function Index() {
           setCurrentPlayer(parsed.currentPlayer || 0);
           setGuesses(parsed.guesses || []);
           setScores(parsed.scores || Array(8).fill(0));
+          console.log('Data loaded successfully');
+        } else {
+          console.log('No saved data found');
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -55,7 +59,9 @@ export default function Index() {
           guesses,
           scores,
         };
-        await AsyncStorage.setItem('alphabetGameData', JSON.stringify(dataToSave));
+        const dataString = JSON.stringify(dataToSave);
+        await SecureStore.setItemAsync('alphabetGameData', dataString);
+        console.log('Data saved:', dataString);
       } catch (error) {
         console.error('Error saving data:', error);
       }
